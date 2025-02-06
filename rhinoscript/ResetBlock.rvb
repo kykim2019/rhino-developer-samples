@@ -1,33 +1,29 @@
-'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
-' ResetBlock.rvb -- August 2016
-' If this code works, it was written by Dale Fugier.
-' If not, I don't know who wrote it.
-' Works with Rhino 5.
-'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
-Option Explicit
+-runscript (
+sub SelectByCentralNormal
 
-'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
-' Resets a block instance by modifying its transformation to be
-' translation only. Thus, only position (not rotation or scale)
-' are retained.
-'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
-Sub ResetBlock
-	
-	Const RH_BLOCK = &h1000
-	Dim arrBlocks, strBlock, arrPoint, arrVector, arrXform
-	
-	arrBlocks = Rhino.GetObjects("Select block instances to reset", RH_BLOCK, True, True)
-	If IsNull(arrBlocks) Then Exit Sub
-	
-	Call Rhino.EnableRedraw(False)
-	
-	For Each strBlock In arrBlocks
-		arrPoint = Rhino.BlockInstanceInsertPoint(strBlock)
-		arrVector = Rhino.VectorCreate(arrPoint, Array(0, 0, 0))
-		arrXform = Rhino.XformTranslation(arrVector)
-		Call Rhino.BlockInstanceXform(strBlock, arrXform)
-	Next
-	
-	Call Rhino.EnableRedraw(True)
+Dim arrObjects, strObject
+objs = Rhino.AllObjects
+If IsArray(objs) Then
+Rhino.UnselectAllObjects()
+For Each obj In objs
 
-End Sub
+
+' SURFACE CASE
+if Rhino.IsSurface(obj) then
+surf = obj
+UV = Rhino.SurfaceParameter (surf , Array(0.5,0.5))
+normal = Rhino.SurfaceNormal (surf , UV)
+cameraLocs = Rhino.ViewCameraTarget()
+vector = Rhino.VectorCreate(cameraLocs(1),cameraLocs(0))
+angle = Rhino.VectorAngle(vector,normal)
+if angle<90 then
+Rhino.SelectObject(surf)
+End If
+End If
+
+
+Next
+Rhino.ZoomSelected()
+End If
+End sub
+SelectByCentralNormal
